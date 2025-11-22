@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Tool - MVerify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="email"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: monospace;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .results-header h3 {
+            color: #333;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card.valid {
+            background: #c6f6d5;
+            border: 2px solid #48bb78;
+        }
+        
+        .stat-card.low-risk {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+        
+        .stat-card.medium-risk {
+            background: #fed7aa;
+            border: 2px solid #ea580c;
+        }
+        
+        .stat-card.invalid {
+            background: #fecaca;
+            border: 2px solid #dc2626;
+        }
+        
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label {
+            font-size: 0.9em;
+            color: #333;
+        }
+        
+        .result-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid;
+            background: #f9fafb;
+        }
+        
+        .result-item.valid {
+            border-left-color: #48bb78;
+        }
+        
+        .result-item.low-risk {
+            border-left-color: #f59e0b;
+        }
+        
+        .result-item.medium-risk {
+            border-left-color: #ea580c;
+        }
+        
+        .result-item.invalid {
+            border-left-color: #dc2626;
+        }
+        
+        .result-item .email {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .result-item .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .badge.valid {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .badge.low-risk {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .badge.medium-risk {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .badge.invalid {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .result-item .details {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fecaca;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+        
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 5px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload:hover {
+            background: #f0f4ff;
+        }
+        
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        
+        .help-text {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📧 MVerify</h1>
+            <p>Email Verification Tool - Reduce Bounce Rates Before Sending Campaigns</p>
+        </header>
+        
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('single')">Single Email</button>
+                <button class="tab" onclick="switchTab('multiple')">Multiple Emails</button>
+                <button class="tab" onclick="switchTab('csv')">CSV Upload</button>
+            </div>
+            
+            <!-- Single Email Tab -->
+            <div id="single-tab" class="tab-content active">
+                <div class="form-group">
+                    <label for="single-email">Email Address</label>
+                    <input type="email" id="single-email" placeholder="example@domain.com">
+                    <div class="help-text">Enter a single email address to verify</div>
+                </div>
+                <button class="btn btn-primary" onclick="verifySingle()">Verify Email</button>
+            </div>
+            
+            <!-- Multiple Emails Tab -->
+            <div id="multiple-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="multiple-emails">Email Addresses (one per line)</label>
+                    <textarea id="multiple-emails" placeholder="email1@domain.com&#10;email2@domain.com&#10;email3@domain.com"></textarea>
+                    <div class="help-text">Enter multiple email addresses, one per line</div>
+                </div>
+                <button class="btn btn-primary" onclick="verifyMultiple()">Verify All Emails</button>
+            </div>
+            
+            <!-- CSV Upload Tab -->
+            <div id="csv-tab" class="tab-content">
+                <div class="form-group">
+                    <label>Upload CSV File</label>
+                    <div class="file-upload" onclick="document.getElementById('csv-file').click()">
+                        <input type="file" id="csv-file" accept=".csv" onchange="handleFileSelect(this)">
+                        <div>📁 Click to upload or drag and drop</div>
+                        <div class="help-text">CSV file with email addresses (supports headers)</div>
+                    </div>
+                    <div id="file-name" style="margin-top: 10px; color: #667eea;"></div>
+                </div>
+                <button class="btn btn-primary" onclick="verifyCSV()" id="csv-verify-btn" disabled>Verify CSV</button>
+            </div>
+            
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Verifying emails...</p>
+            </div>
+            
+            <!-- Error Display -->
+            <div id="error-display"></div>
+            
+            <!-- Results Section -->
+            <div id="results" class="results" style="display: none;">
+                <div class="results-header">
+                    <h3>Verification Results</h3>
+                    <button class="btn btn-secondary" onclick="exportCSV()">Export as CSV</button>
+                </div>
+                
+                <div id="stats" class="stats"></div>
+                <div id="results-list"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentResults = [];
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Clear results and errors
+            hideResults();
+            clearError();
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+            document.querySelectorAll('.btn').forEach(btn => btn.disabled = true);
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+            document.querySelectorAll('.btn').forEach(btn => btn.disabled = false);
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-display');
+            errorDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        function clearError() {
+            document.getElementById('error-display').innerHTML = '';
+        }
+        
+        function showResults(results) {
+            currentResults = Array.isArray(results) ? results : [results];
+            
+            // Calculate stats
+            const stats = {
+                valid: 0,
+                lowRisk: 0,
+                mediumRisk: 0,
+                invalid: 0
+            };
+            
+            currentResults.forEach(result => {
+                switch(result.risk_level) {
+                    case 'Valid':
+                        stats.valid++;
+                        break;
+                    case 'Low Risk':
+                        stats.lowRisk++;
+                        break;
+                    case 'Medium Risk':
+                        stats.mediumRisk++;
+                        break;
+                    case 'Invalid':
+                        stats.invalid++;
+                        break;
+                }
+            });
+            
+            // Display stats
+            const statsHTML = `
+                <div class="stat-card valid">
+                    <div class="number">${stats.valid}</div>
+                    <div class="label">Valid</div>
+                </div>
+                <div class="stat-card low-risk">
+                    <div class="number">${stats.lowRisk}</div>
+                    <div class="label">Low Risk</div>
+                </div>
+                <div class="stat-card medium-risk">
+                    <div class="number">${stats.mediumRisk}</div>
+                    <div class="label">Medium Risk</div>
+                </div>
+                <div class="stat-card invalid">
+                    <div class="number">${stats.invalid}</div>
+                    <div class="label">Invalid</div>
+                </div>
+            `;
+            document.getElementById('stats').innerHTML = statsHTML;
+            
+            // Display individual results
+            const resultsHTML = currentResults.map(result => {
+                const cssClass = result.risk_level.toLowerCase().replace(' ', '-');
+                return `
+                    <div class="result-item ${cssClass}">
+                        <div class="email">${result.email}</div>
+                        <div>
+                            <span class="badge ${cssClass}">${result.risk_level}</span>
+                            <span style="color: #666; font-size: 0.9em;">${result.timestamp}</span>
+                        </div>
+                        <div class="details">${result.details}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('results-list').innerHTML = resultsHTML;
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+            currentResults = [];
+        }
+        
+        async function verifySingle() {
+            const email = document.getElementById('single-email').value.trim();
+            
+            if (!email) {
+                showError('Please enter an email address');
+                return;
+            }
+            
+            clearError();
+            showLoading();
+            hideResults();
+            
+            try {
+                const response = await fetch('/verify/single', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResults(data);
+                } else {
+                    showError(data.error || 'Verification failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function verifyMultiple() {
+            const emailsText = document.getElementById('multiple-emails').value;
+            const emails = emailsText.split('\n')
+                .map(e => e.trim())
+                .filter(e => e.length > 0);
+            
+            if (emails.length === 0) {
+                showError('Please enter at least one email address');
+                return;
+            }
+            
+            clearError();
+            showLoading();
+            hideResults();
+            
+            try {
+                const response = await fetch('/verify/multiple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ emails })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResults(data.results);
+                } else {
+                    showError(data.error || 'Verification failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                document.getElementById('file-name').textContent = `Selected: ${file.name}`;
+                document.getElementById('csv-verify-btn').disabled = false;
+            }
+        }
+        
+        async function verifyCSV() {
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showError('Please select a CSV file');
+                return;
+            }
+            
+            clearError();
+            showLoading();
+            hideResults();
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/verify/csv', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResults(data.results);
+                } else {
+                    showError(data.error || 'CSV verification failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function exportCSV() {
+            if (currentResults.length === 0) {
+                showError('No results to export');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/export/csv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ results: currentResults })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `email_verification_${Date.now()}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    showError('Export failed');
+                }
+            } catch (error) {
+                showError('Export error: ' + error.message);
+            }
+        }
+        
+        // Allow Enter key to trigger verification in single email input
+        document.getElementById('single-email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifySingle();
+            }
+        });
+    </script>
+</body>
+</html>
