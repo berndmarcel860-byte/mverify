@@ -41,12 +41,24 @@ pip install -r requirements.txt
 
 ### Starting the Application
 
-Run the Flask application:
+**Development Mode:**
 ```bash
 python app.py
 ```
 
+**Development with Debug Mode (not recommended for production):**
+```bash
+DEBUG=true python app.py
+```
+
 The application will start on `http://localhost:5000`
+
+**Production Deployment:**
+For production use, it's recommended to use a production WSGI server like Gunicorn:
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
 
 ### Web Interface
 
