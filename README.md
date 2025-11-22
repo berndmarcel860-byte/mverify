@@ -102,11 +102,13 @@ After verification, click the "Export as CSV" button to download results includi
 - Domain exists with multiple MX records
 - No suspicious patterns
 - Not a disposable email service
+- **Note**: For major providers (Gmail, Outlook, etc.), mailbox verification is blocked, so only domain-level checks are performed
 
 ### Low Risk ⚠️
 - Valid email format
 - Domain exists with single MX record
 - May have minimal configuration
+- Mailbox verification unavailable (most providers block this)
 
 ### Medium Risk 🟠
 - Disposable/temporary email services (e.g., tempmail.com, 10minutemail.com)
@@ -118,6 +120,26 @@ After verification, click the "Export as CSV" button to download results includi
 - Non-existent domain
 - No mail server configuration (no MX or A records)
 - Cannot receive emails
+- Mailbox verified as non-existent (when verification is available)
+
+## Verification Limitations
+
+**Important**: This tool verifies that email domains exist and can receive mail, but cannot guarantee that specific mailboxes exist at major providers like Gmail, Outlook, Yahoo, etc.
+
+**What we verify:**
+- ✅ Email syntax and format
+- ✅ Domain existence (DNS)
+- ✅ Mail server configuration (MX records)
+- ✅ Disposable email detection
+- ✅ Suspicious pattern detection
+- ✅ SMTP mailbox verification (when available)
+
+**What we cannot verify:**
+- ❌ Whether a specific mailbox exists at Gmail, Outlook, Yahoo, etc. (these providers block verification to prevent spam)
+- ❌ Whether the mailbox is active and monitored
+- ❌ Whether emails will be accepted (inbox rules, spam filters, etc.)
+
+**Best practice**: Use this tool to eliminate obviously invalid addresses (bad domains, typos, disposable emails) before sending campaigns. For major providers, the tool verifies the domain can receive mail but shows "mailbox unverified" to indicate the limitation.
 
 ## Technical Details
 
