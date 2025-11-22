@@ -199,20 +199,20 @@ class EmailVerifier:
         
         # Try each MX server
         for mx_server in mx_servers[:3]:  # Try up to 3 servers
+            smtp = None
             try:
                 # Connect to SMTP server
                 smtp = smtplib.SMTP(timeout=10)
                 smtp.connect(mx_server, 25)
                 
-                # Send HELO
-                smtp.helo('verify.example.com')
+                # Send HELO with localhost (standard for verification)
+                smtp.helo('localhost')
                 
-                # Send MAIL FROM
-                smtp.mail('verify@example.com')
+                # Send MAIL FROM with null sender (RFC 5321 standard for verification)
+                smtp.mail('')
                 
                 # Send RCPT TO - this checks if mailbox exists
                 code, message = smtp.rcpt(email)
-                smtp.quit()
                 
                 # Check response code
                 if code == 250:
@@ -229,12 +229,19 @@ class EmailVerifier:
                     return result
                 # If 4xx code, try next server
                 
-            except (socket.timeout, socket.error, smtplib.SMTPException) as e:
+            except (socket.timeout, socket.error, smtplib.SMTPException):
                 # Connection failed, try next server
                 continue
             except Exception:
                 # Unexpected error, try next server
                 continue
+            finally:
+                # Always close the connection
+                if smtp:
+                    try:
+                        smtp.quit()
+                    except Exception:
+                        pass
         
         # If we couldn't verify, assume mailbox exists to avoid false negatives
         result['mailbox_exists'] = True
